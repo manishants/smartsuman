@@ -87,3 +87,5 @@ __tests__
 .modified
 src/app/admin
 src/app/superadmin
+src/lib/api-keys.json
+data/api-keys.json
