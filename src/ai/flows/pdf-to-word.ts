@@ -187,7 +187,19 @@ export async function pdfToWord(
     return pdfToWordNoOcr(input);
   }
 
-  const result = await pdfToWordFlow({ pdfUri: input.pdfUri });
+  let result;
+  try {
+    result = await pdfToWordFlow({ pdfUri: input.pdfUri });
+  } catch (e: any) {
+    try {
+      const fallback = await pdfToWordNoOcr(input);
+      return fallback;
+    } catch (e2: any) {
+      throw new Error(
+        e?.message || 'AI conversion failed and fallback converter was not available.'
+      );
+    }
+  }
 
   // Create paragraphs from the structured content
   const paragraphs = result.content.map(

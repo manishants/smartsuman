@@ -23,7 +23,7 @@ type ApiKeysStoreShape = {
   rotation: Record<Provider, RotationConfig>
 }
 
-const STORE_FILE = path.join(process.cwd(), 'src', 'lib', 'api-keys.json')
+const STORE_FILE = path.join(process.cwd(), 'data', 'api-keys.json')
 
 const defaultStore: ApiKeysStoreShape = {
   providers: {
@@ -35,11 +35,15 @@ const defaultStore: ApiKeysStoreShape = {
 }
 
 function ensureStore() {
-  if (!fs.existsSync(STORE_FILE)) {
-    fs.writeFileSync(STORE_FILE, JSON.stringify(defaultStore, null, 2), 'utf-8')
-    return
-  }
   try {
+    const dir = path.dirname(STORE_FILE)
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true })
+    }
+    if (!fs.existsSync(STORE_FILE)) {
+      fs.writeFileSync(STORE_FILE, JSON.stringify(defaultStore, null, 2), 'utf-8')
+      return
+    }
     const raw = fs.readFileSync(STORE_FILE, 'utf-8')
     const parsed = JSON.parse(raw || '{}') as Partial<ApiKeysStoreShape>
     const merged: ApiKeysStoreShape = {
@@ -56,7 +60,11 @@ function ensureStore() {
     }
     fs.writeFileSync(STORE_FILE, JSON.stringify(merged, null, 2), 'utf-8')
   } catch {
-    fs.writeFileSync(STORE_FILE, JSON.stringify(defaultStore, null, 2), 'utf-8')
+    try {
+      const dir = path.dirname(STORE_FILE)
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+      fs.writeFileSync(STORE_FILE, JSON.stringify(defaultStore, null, 2), 'utf-8')
+    } catch {}
   }
 }
 
@@ -72,7 +80,13 @@ function readStore(): ApiKeysStoreShape {
 }
 
 function writeStore(store: ApiKeysStoreShape) {
-  fs.writeFileSync(STORE_FILE, JSON.stringify(store, null, 2), 'utf-8')
+  try {
+    const dir = path.dirname(STORE_FILE)
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true })
+    }
+    fs.writeFileSync(STORE_FILE, JSON.stringify(store, null, 2), 'utf-8')
+  } catch {}
 }
 
 function generateId(): string {
