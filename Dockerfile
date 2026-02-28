@@ -44,6 +44,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
  # Explicit path for LibreOffice binary to ensure discovery in app code
  ENV LIBREOFFICE_PATH=/usr/bin/soffice
+ENV TMPDIR=/tmp
 
 # Install LibreOffice and minimal runtime libs in production image
 ENV DEBIAN_FRONTEND=noninteractive
@@ -60,7 +61,6 @@ RUN set -eux; \
       fonts-dejavu \
       fonts-freefont-ttf \
       fonts-opensymbol \
-      curl \
       ca-certificates \
       libnss3 \
       libx11-6 \
@@ -85,7 +85,9 @@ RUN set -eux; \
       # Chromium for Puppeteer
       chromium; \
     apt-get clean; \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*; \
+    chmod 1777 /tmp; \
+    rm -rf /var/tmp && ln -s /tmp /var/tmp
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
